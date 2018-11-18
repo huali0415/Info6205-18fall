@@ -15,16 +15,22 @@ public class Queue_Elements<Item> implements Iterable<Item>, Queue<Item>  {
         oldest = null;
         newest = null;
     }
-
+    
     /**
-     * Enqueue the given item into the linked list referenced by oldest
-     *
-     * @param item the item to add
-     */
-    public void enqueue( Item item) {
-        // TODO
-    }
-
+    * Enqueue the given item into the linked list referenced by oldest
+    *
+    * @param item the item to add
+    */
+    public void enqueue(Item item) {
+        Element element = new Element<>(item);
+        Element secondNewest = newest;
+        if (isEmpty()) oldest = element;
+        else {
+            assert secondNewest != null; // Redundant Check
+            secondNewest.next = element;
+        }
+        this.newest = element;
+        }
 
     /**
      * Dequeue an element from the oldest list and return the item.
@@ -34,10 +40,13 @@ public class Queue_Elements<Item> implements Iterable<Item>, Queue<Item>  {
     public Item dequeue() {
         if (isEmpty()) return null;
         else {
-            // TODO
-            return null;
+            assert oldest != null; // Redundant assertion
+            Item result = oldest.item;
+            oldest = oldest.next;
+            if (isEmpty()) newest = null;
+            return result;
+            }
         }
-    }
 
     public boolean isEmpty() {
         return oldest == null;

@@ -1,5 +1,6 @@
 package edu.neu.coe.info6205.symbolTable;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -241,12 +242,8 @@ public class BSTSimple<Key extends Comparable<Key>, Value> implements BSTdetail<
         show(root, sb, 0);
         return sb.toString();
     }
-    
-    // Java program to find height of tree 
-    /* Compute the "maxDepth" of a tree -- the number of 
-    nodes along the longest path from the root node 
-    down to the farthest leaf node.*/
-    int maxDepth(Node node) 
+
+    private int maxDepth(Node node) 
     { 
         if (node == null) 
                 return 0; 
@@ -263,30 +260,93 @@ public class BSTSimple<Key extends Comparable<Key>, Value> implements BSTdetail<
                 return (rDepth + 1); 
         } 
     } 
+    
+    private int maxDepth() {
+    	return maxDepth(root);
+    }
+    
+    private int depth(Node node) {
+    	return depth(node,root);
+    }
+    
+    private int depth(Node node, Node key) {
+    	if(node == null) return 0;
+    	int cmp = node.key.compareTo(key.key);
+    	int dep = 0;
+    	if(cmp == 0) return 1;
+    	else if(cmp > 0) return 1 + depth(node,key.larger);
+    	else return 1 + depth(node,key.smaller);
+    }
+    
+    private int leafDepth(Node node) {
+    	if(node.smaller == null && node.larger == null) return depth(node);
+    	else return 0;
+    }
+    
+    private int sumDepth(Node node) {
+    	if(node == null) return 0;
+    	return leafDepth(node) + sumDepth(node.smaller) + sumDepth(node.larger);
+    }
+    
+    private int leafCount() {
+    	return leafCount(root);
+    }
+    
+    private int leafCount(Node node) {
+    	if(node == null) return 0;
+    	if(node.smaller != null || node.larger != null)
+    		return leafCount(node.smaller) + leafCount(node.larger);
+    	else return 1;
+    }
+    
+    private double avgDepth() {
+    	return sumDepth(root)/(leafCount()*1.0);
+    }
+    
+    private BSTSimple insDel(BSTSimple bst,int n) {
+        int dCount = 0;
+        int iCount = 0;
+        while(dCount+iCount < 2*n) {
+                Random random = new Random();
+                int choice = random.nextInt(2);
+                if(choice == 0 && dCount < n) {
+                        int key = random.nextInt(2*n);
+                        bst.delete(key);
+                        dCount++;
+                }
+                if(choice == 1 && iCount < n) {
+                        int key = random.nextInt(2*n);
+                        bst.put(key, key);
+                        iCount ++;
+                }
+        }
+        return bst;
+    }
 
     /* Driver program to test above functions */
     public static void main(String[] args) 
     { 
-        Map<Integer, String> hm = new HashMap<>();
-        BSTSimple<Integer, String> tree = new BSTSimple<>(hm); 
-
-        Random random = new Random();
-        int t = random.nextInt(1000);
-        hm.put(t, Integer.toString(t));
-        
-        int depth = tree.maxDepth(tree.root);
-        
-        for(int i = 0; i < 1000; i++)
+        int M = 100000;
+        System.out.println("Num\tCount\tAverage\tMax\tN^1/2\tlgN");
+        for(int N = 100; N < 10000; N+=100)
         {
-            int cutoff = random.nextInt(1000);
-            if(cutoff < 500){
-                tree.delete(tree.root, random.nextInt(2000));
-            }
-            else{
-                tree.put(random.nextInt(2000), Integer.toString(random.nextInt(2000)));
-            }
-        }
-        System.out.println(Integer.toString(tree.maxDepth(tree.getRoot())) + " " + Integer.toString(tree.size()));
-    } 
-     
+            Random random = new Random();
+            Map<Integer, Integer> hm = new HashMap<>();
+            while(hm.size() < N) {
+                int t = random.nextInt(2*N);
+                hm.put(t, t);
+            }  
+            BSTSimple<Integer, Integer> bst = new BSTSimple<>(hm);
+            bst = bst.insDel(bst, M);
+//            int initDepth = bst.maxDepth();
+//            int initCount = bst.size();
+//            int initAvgDepth = bst.avgDepth();           
+            int maxDepth = bst.maxDepth();
+            int count = bst.size();
+            double avgDepth = bst.avgDepth();
+            double square = Math.sqrt(N);
+            double lgN = Math.log(N) / Math.log(2);
+            System.out.printf("%d\t%d\t%.4f\t%d\t%.4f\t%.4f\n", N, count, avgDepth, maxDepth, square, lgN);
+        }   
+    }     
 }
